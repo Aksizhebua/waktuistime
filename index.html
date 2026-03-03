@@ -189,71 +189,6 @@
             animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* Gemini AI Feature Styles */
-        .gemini-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
-            font-family: inherit;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: auto; /* Push to bottom */
-        }
-
-        .gemini-btn:hover {
-            background: var(--btn-gradient);
-            border-color: transparent;
-            transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
-        }
-        
-        .gemini-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .gemini-response {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
-            font-size: 0.9rem;
-            color: #e0e0e0;
-            text-align: left;
-            width: 100%;
-            display: none;
-            border-left: 3px solid var(--accent);
-            line-height: 1.5;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
     </style>
 </head>
 <body>
@@ -261,7 +196,7 @@
     <div class="container">
         <header class="header">
             <h1>Global TimeSync</h1>
-            <p>Pelacakan zona waktu real-time akurat dengan Wawasan AI</p>
+            <p>Pelacakan zona waktu real-time akurat</p>
         </header>
 
         <div class="section">
@@ -286,9 +221,6 @@
     </div>
 
     <script>
-        // API Configuration
-        const apiKey = ""; // Provided by execution environment
-
         // Configuration for Clocks
         const clocksConfig = {
             jakarta: [
@@ -316,11 +248,6 @@
                         <span class="time-sec" id="sec-${clock.id}">:--</span>
                     </div>
                     <div class="date-display" id="date-${clock.id}">Memuat tanggal...</div>
-                    
-                    <button class="gemini-btn" id="btn-${clock.id}" onclick="handleGeminiClick('${clock.id}')">
-                        ✨ Cek Suasana Lokal
-                    </button>
-                    <div class="gemini-response" id="response-${clock.id}"></div>
                 </div>
             `;
         }
@@ -343,16 +270,16 @@
             formatters[clock.id] = {
                 time: new Intl.DateTimeFormat('id-ID', {
                     timeZone: clock.zone,
-                    hour: '2-digit', 
-                    minute: '2-digit', 
+                    hour: '2-digit',
+                    minute: '2-digit',
                     second: '2-digit',
                     hourCycle: 'h23'
                 }),
                 date: new Intl.DateTimeFormat('id-ID', {
                     timeZone: clock.zone,
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
                     day: 'numeric'
                 })
             };
@@ -366,11 +293,11 @@
 
             allClocks.forEach(clock => {
                 const clockFormatters = formatters[clock.id];
-                
+
                 // Time Parsing
                 const timeParts = clockFormatters.time.formatToParts(now);
                 let hours = '', minutes = '', seconds = '';
-                
+
                 timeParts.forEach(part => {
                     if (part.type === 'hour') hours = part.value;
                     if (part.type === 'minute') minutes = part.value;
@@ -383,11 +310,11 @@
                 // DOM Updates
                 document.getElementById(`time-${clock.id}`).textContent = `${hours}:${minutes}`;
                 const secElement = document.getElementById(`sec-${clock.id}`);
-                
+
                 if (previousSeconds[clock.id] !== seconds) {
                     secElement.textContent = `:${seconds}`;
                     secElement.classList.remove('tick-anim');
-                    void secElement.offsetWidth; 
+                    void secElement.offsetWidth;
                     secElement.classList.add('tick-anim');
                     previousSeconds[clock.id] = seconds;
                 }
@@ -398,78 +325,6 @@
 
         updateClocks();
         setInterval(updateClocks, 1000);
-
-        // --- GEMINI API INTEGRATION ---
-
-        // Exponential backoff retry logic
-        async function fetchWithRetry(url, options, maxRetries = 5) {
-            const delays = [1000, 2000, 4000, 8000, 16000];
-            
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return await response.json();
-                } catch (error) {
-                    if (i === maxRetries - 1) throw error;
-                    await new Promise(resolve => setTimeout(resolve, delays[i]));
-                }
-            }
-        }
-
-        async function handleGeminiClick(clockId) {
-            const clock = allClocks.find(c => c.id === clockId);
-            const btn = document.getElementById(`btn-${clockId}`);
-            const responseDiv = document.getElementById(`response-${clockId}`);
-            
-            // Get current local time strings to feed into the prompt
-            const currentTimeStr = document.getElementById(`time-${clockId}`).textContent;
-            const currentDateStr = document.getElementById(`date-${clockId}`).textContent;
-
-            // Update UI to loading state
-            btn.disabled = true;
-            btn.innerHTML = `<span class="loading-spinner"></span> Mengecek suasana...`;
-            responseDiv.style.display = 'none';
-
-            const promptText = `Anda adalah asisten perjalanan dan budaya yang ceria. Saat ini tepat pukul ${currentTimeStr} pada tanggal ${currentDateStr} waktu lokal di ${clock.city}. 
-            Dalam 2-3 kalimat singkat yang menarik, beri tahu saya apa yang biasanya dilakukan penduduk setempat saat ini, atau seperti apa suasana/vibe saat ini di kota tersebut pada waktu ini.`;
-
-            const payload = {
-                contents: [{
-                    parts: [{ text: promptText }]
-                }],
-                systemInstruction: {
-                    parts: [{ text: "Selalu jawab dengan ramah, ringkas, dan menggunakan Bahasa Indonesia yang natural. Fokus dengan ketat pada waktu saat ini yang diberikan." }]
-                }
-            };
-
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-
-            try {
-                const data = await fetchWithRetry(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Tidak dapat memuat suasana saat ini.";
-                
-                // Show response
-                responseDiv.innerHTML = generatedText;
-                responseDiv.style.display = 'block';
-
-            } catch (error) {
-                responseDiv.innerHTML = "Ups, tidak dapat terhubung ke AI saat ini. Silakan coba lagi nanti.";
-                responseDiv.style.display = 'block';
-            } finally {
-                // Restore button state
-                btn.disabled = false;
-                btn.innerHTML = `✨ Cek Suasana Lokal`;
-            }
-        }
-
     </script>
 </body>
 </html>
