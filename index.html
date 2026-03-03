@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global TimeSync | Jam Dunia Real-Time</title>
-    
+
     <!-- Google Fonts: Poppins for modern, clean UI -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,23 +36,33 @@
             background-attachment: fixed;
             color: var(--text-main);
             min-height: 100vh;
-            padding: 2rem 1rem;
+            padding: 0; /* allow hero to truly fill 1 layar */
             line-height: 1.6;
         }
 
         /* Layout & Containers */
         .container {
+            width: 100%;
             max-width: 1000px;
             margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* 1 layar hero untuk WIB (Jakarta) */
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
         }
 
         .header h1 {
-            font-size: 2.5rem;
+            font-size: clamp(2rem, 3vw, 2.5rem);
             font-weight: 700;
             margin-bottom: 0.5rem;
             background: var(--btn-gradient);
@@ -95,23 +105,36 @@
         .hero-grid {
             display: flex;
             justify-content: center;
-            margin-bottom: 2rem;
         }
 
         .hero-grid .card {
             width: 100%;
-            max-width: 600px;
+            max-width: 800px;
+            padding: clamp(1.5rem, 4vw, 3rem);
             background: rgba(255, 255, 255, 0.08);
             border-color: rgba(79, 172, 254, 0.3);
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
         }
 
         .hero-grid .time-main {
-            font-size: 4.5rem;
+            font-size: clamp(4.5rem, 12vw, 9rem);
             background: var(--btn-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-shadow: none;
+        }
+
+        .hero-grid .time-sec {
+            font-size: clamp(1.5rem, 4vw, 3rem);
+        }
+
+        .hero-grid .city-name {
+            font-size: clamp(1.1rem, 2vw, 1.5rem);
+            letter-spacing: 3px;
+        }
+
+        .hero-grid .date-display {
+            font-size: clamp(1rem, 1.8vw, 1.25rem);
         }
 
         /* Glassmorphism Card Design */
@@ -194,14 +217,16 @@
 <body>
 
     <div class="container">
-        <header class="header">
-            <h1>Global TimeSync</h1>
-            <p>Pelacakan zona waktu real-time akurat</p>
-        </header>
+        <div class="hero-section">
+            <header class="header">
+                <h1>Global TimeSync</h1>
+                <p>Pelacakan zona waktu real-time akurat</p>
+            </header>
 
-        <div class="section">
-            <div class="hero-grid" id="jakarta-clock">
-                <!-- Jakarta Card injected via JS -->
+            <div class="section">
+                <div class="hero-grid" id="jakarta-clock">
+                    <!-- Jakarta Card injected via JS -->
+                </div>
             </div>
         </div>
 
