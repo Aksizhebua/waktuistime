@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global TimeSync | Real-Time World Clocks</title>
+    
+    <!-- Google Fonts: Poppins for modern, clean UI -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Base Variables and Reset */
+        :root {
+            --bg-gradient-start: #0f2027;
+            --bg-gradient-mid: #203a43;
+            --bg-gradient-end: #2c5364;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-main: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --accent: #4facfe;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-mid), var(--bg-gradient-end));
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            line-height: 1.6;
+        }
+
+        /* Layout & Containers */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--card-border);
+            color: var(--text-main);
+        }
+
+        .section {
+            margin-bottom: 3.5rem;
+        }
+
+        /* Responsive Grid: 1 col mobile, 2 cols desktop */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Glassmorphism Card Design */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .city-name {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+        }
+
+        /* Typography for Time and Date */
+        .time-display {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+            font-variant-numeric: tabular-nums; /* Keeps numbers monospaced */
+        }
+
+        .time-main {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .time-sec {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--accent);
+            margin-left: 4px;
+            display: inline-block;
+        }
+
+        .date-display {
+            font-size: 1rem;
+            font-weight: 300;
+            color: var(--text-muted);
+        }
+
+        /* Subtle Second Tick Animation */
+        @keyframes pop {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.15); opacity: 1; color: #00f2fe; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+
+        .tick-anim {
+            animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="header">
+            <h1>Global TimeSync</h1>
+            <p>Real-time accurate timezone tracking</p>
+        </header>
+
+        <div class="section">
+            <h2 class="section-title">Indonesian Timezones</h2>
+            <div class="grid" id="indonesia-clocks">
+                <!-- Cards injected via JS -->
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">World Clocks</h2>
+            <div class="grid" id="world-clocks">
+                <!-- Cards injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration for Clocks
+        const clocksConfig = {
+            indonesia: [
+                { id: 'wib', name: 'WIB (Jakarta)', zone: 'Asia/Jakarta' },
+                { id: 'wita', name: 'WITA (Makassar)', zone: 'Asia/Makassar' },
+                { id: 'wit', name: 'WIT (Jayapura)', zone: 'Asia/Jayapura' }
+            ],
+            world: [
+                { id: 'london', name: 'London', zone: 'Europe/London' },
+                { id: 'new_york', name: 'New York', zone: 'America/New_York' },
+                { id: 'tokyo', name: 'Tokyo', zone: 'Asia/Tokyo' },
+                { id: 'dubai', name: 'Dubai', zone: 'Asia/Dubai' }
+            ]
+        };
+
+        // UI Generator Function
+        function createClockCard(clock) {
+            return `
+                <div class="card" id="card-${clock.id}">
+                    <div class="city-name">${clock.name}</div>
+                    <div class="time-display">
+                        <span class="time-main" id="time-${clock.id}">--:--</span>
+                        <span class="time-sec" id="sec-${clock.id}">:--</span>
+                    </div>
+                    <div class="date-display" id="date-${clock.id}">Loading date...</div>
+                </div>
+            `;
+        }
+
+        // Initialize DOM Elements
+        const indonesiaContainer = document.getElementById('indonesia-clocks');
+        const worldContainer = document.getElementById('world-clocks');
+
+        indonesiaContainer.innerHTML = clocksConfig.indonesia.map(createClockCard).join('');
+        worldContainer.innerHTML = clocksConfig.world.map(createClockCard).join('');
+
+        // Combine all configurations into a flat array for easy iteration
+        const allClocks = [...clocksConfig.indonesia, ...clocksConfig.world];
+
+        // Formatters cache to optimize performance
+        const formatters = {};
+        allClocks.forEach(clock => {
+            formatters[clock.id] = {
+                // Using hourCycle: 'h23' forces standard 24-hour time without AM/PM and avoids 24:xx bugs
+                time: new Intl.DateTimeFormat('en-US', {
+                    timeZone: clock.zone,
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit',
+                    hourCycle: 'h23'
+                }),
+                date: new Intl.DateTimeFormat('en-US', {
+                    timeZone: clock.zone,
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric'
+                })
+            };
+        });
+
+        // Store previous seconds to detect changes and trigger animation efficiently
+        const previousSeconds = {};
+
+        // Main Update Loop
+        function updateClocks() {
+            const now = new Date();
+
+            allClocks.forEach(clock => {
+                const clockFormatters = formatters[clock.id];
+                
+                // --- Time Parsing ---
+                const timeParts = clockFormatters.time.formatToParts(now);
+                let hours = '', minutes = '', seconds = '';
+                
+                timeParts.forEach(part => {
+                    if (part.type === 'hour') hours = part.value;
+                    if (part.type === 'minute') minutes = part.value;
+                    if (part.type === 'second') seconds = part.value;
+                });
+
+                // --- Date Parsing ---
+                const fullDate = clockFormatters.date.format(now);
+
+                // --- DOM Updates ---
+                document.getElementById(`time-${clock.id}`).textContent = `${hours}:${minutes}`;
+                const secElement = document.getElementById(`sec-${clock.id}`);
+                
+                // Only trigger DOM manipulation and animation if the second actually changed
+                if (previousSeconds[clock.id] !== seconds) {
+                    secElement.textContent = `:${seconds}`;
+                    
+                    // Trigger subtle CSS animation
+                    secElement.classList.remove('tick-anim');
+                    void secElement.offsetWidth; // Force DOM reflow to restart animation
+                    secElement.classList.add('tick-anim');
+
+                    previousSeconds[clock.id] = seconds;
+                }
+
+                document.getElementById(`date-${clock.id}`).textContent = fullDate;
+            });
+        }
+
+        // Run immediately on load, then set interval to 1000ms
+        updateClocks();
+        setInterval(updateClocks, 1000);
+    </script>
+</body>
+</html>
