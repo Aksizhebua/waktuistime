@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global TimeSync | Real-Time World Clocks</title>
+    <title>Global TimeSync | Jam Dunia Real-Time</title>
     
     <!-- Google Fonts: Poppins for modern, clean UI -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,6 +21,7 @@
             --text-main: #ffffff;
             --text-muted: rgba(255, 255, 255, 0.7);
             --accent: #4facfe;
+            --btn-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
 
         * {
@@ -54,7 +55,7 @@
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
-            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+            background: var(--btn-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -90,6 +91,29 @@
             }
         }
 
+        /* Jakarta Hero Card */
+        .hero-grid {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .hero-grid .card {
+            width: 100%;
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(79, 172, 254, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-grid .time-main {
+            font-size: 4.5rem;
+            background: var(--btn-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: none;
+        }
+
         /* Glassmorphism Card Design */
         .card {
             background: var(--card-bg);
@@ -107,7 +131,7 @@
         }
 
         .card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-4px);
             box-shadow: 0 15px 45px rgba(0, 0, 0, 0.3);
             border-color: rgba(255, 255, 255, 0.2);
             background: rgba(255, 255, 255, 0.08);
@@ -128,7 +152,7 @@
             align-items: baseline;
             justify-content: center;
             margin-bottom: 0.5rem;
-            font-variant-numeric: tabular-nums; /* Keeps numbers monospaced */
+            font-variant-numeric: tabular-nums;
         }
 
         .time-main {
@@ -151,6 +175,7 @@
             font-size: 1rem;
             font-weight: 300;
             color: var(--text-muted);
+            margin-bottom: 1.5rem;
         }
 
         /* Subtle Second Tick Animation */
@@ -163,6 +188,72 @@
         .tick-anim {
             animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
+
+        /* Gemini AI Feature Styles */
+        .gemini-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: auto; /* Push to bottom */
+        }
+
+        .gemini-btn:hover {
+            background: var(--btn-gradient);
+            border-color: transparent;
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        .gemini-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .gemini-response {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            color: #e0e0e0;
+            text-align: left;
+            width: 100%;
+            display: none;
+            border-left: 3px solid var(--accent);
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
     </style>
 </head>
 <body>
@@ -170,18 +261,24 @@
     <div class="container">
         <header class="header">
             <h1>Global TimeSync</h1>
-            <p>Real-time accurate timezone tracking</p>
+            <p>Pelacakan zona waktu real-time akurat dengan Wawasan AI</p>
         </header>
 
         <div class="section">
-            <h2 class="section-title">Indonesian Timezones</h2>
+            <div class="hero-grid" id="jakarta-clock">
+                <!-- Jakarta Card injected via JS -->
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Waktu Indonesia Lainnya</h2>
             <div class="grid" id="indonesia-clocks">
                 <!-- Cards injected via JS -->
             </div>
         </div>
 
         <div class="section">
-            <h2 class="section-title">World Clocks</h2>
+            <h2 class="section-title">Jam Dunia</h2>
             <div class="grid" id="world-clocks">
                 <!-- Cards injected via JS -->
             </div>
@@ -189,18 +286,23 @@
     </div>
 
     <script>
+        // API Configuration
+        const apiKey = ""; // Provided by execution environment
+
         // Configuration for Clocks
         const clocksConfig = {
+            jakarta: [
+                { id: 'wib', name: 'WIB (Jakarta)', zone: 'Asia/Jakarta', city: 'Jakarta' }
+            ],
             indonesia: [
-                { id: 'wib', name: 'WIB (Jakarta)', zone: 'Asia/Jakarta' },
-                { id: 'wita', name: 'WITA (Makassar)', zone: 'Asia/Makassar' },
-                { id: 'wit', name: 'WIT (Jayapura)', zone: 'Asia/Jayapura' }
+                { id: 'wita', name: 'WITA (Makassar)', zone: 'Asia/Makassar', city: 'Makassar' },
+                { id: 'wit', name: 'WIT (Jayapura)', zone: 'Asia/Jayapura', city: 'Jayapura' }
             ],
             world: [
-                { id: 'london', name: 'London', zone: 'Europe/London' },
-                { id: 'new_york', name: 'New York', zone: 'America/New_York' },
-                { id: 'tokyo', name: 'Tokyo', zone: 'Asia/Tokyo' },
-                { id: 'dubai', name: 'Dubai', zone: 'Asia/Dubai' }
+                { id: 'london', name: 'London', zone: 'Europe/London', city: 'London' },
+                { id: 'new_york', name: 'New York', zone: 'America/New_York', city: 'New York' },
+                { id: 'tokyo', name: 'Tokyo', zone: 'Asia/Tokyo', city: 'Tokyo' },
+                { id: 'dubai', name: 'Dubai', zone: 'Asia/Dubai', city: 'Dubai' }
             ]
         };
 
@@ -213,34 +315,40 @@
                         <span class="time-main" id="time-${clock.id}">--:--</span>
                         <span class="time-sec" id="sec-${clock.id}">:--</span>
                     </div>
-                    <div class="date-display" id="date-${clock.id}">Loading date...</div>
+                    <div class="date-display" id="date-${clock.id}">Memuat tanggal...</div>
+                    
+                    <button class="gemini-btn" id="btn-${clock.id}" onclick="handleGeminiClick('${clock.id}')">
+                        ✨ Cek Suasana Lokal
+                    </button>
+                    <div class="gemini-response" id="response-${clock.id}"></div>
                 </div>
             `;
         }
 
         // Initialize DOM Elements
+        const jakartaContainer = document.getElementById('jakarta-clock');
         const indonesiaContainer = document.getElementById('indonesia-clocks');
         const worldContainer = document.getElementById('world-clocks');
 
+        jakartaContainer.innerHTML = clocksConfig.jakarta.map(createClockCard).join('');
         indonesiaContainer.innerHTML = clocksConfig.indonesia.map(createClockCard).join('');
         worldContainer.innerHTML = clocksConfig.world.map(createClockCard).join('');
 
         // Combine all configurations into a flat array for easy iteration
-        const allClocks = [...clocksConfig.indonesia, ...clocksConfig.world];
+        const allClocks = [...clocksConfig.jakarta, ...clocksConfig.indonesia, ...clocksConfig.world];
 
         // Formatters cache to optimize performance
         const formatters = {};
         allClocks.forEach(clock => {
             formatters[clock.id] = {
-                // Using hourCycle: 'h23' forces standard 24-hour time without AM/PM and avoids 24:xx bugs
-                time: new Intl.DateTimeFormat('en-US', {
+                time: new Intl.DateTimeFormat('id-ID', {
                     timeZone: clock.zone,
                     hour: '2-digit', 
                     minute: '2-digit', 
                     second: '2-digit',
                     hourCycle: 'h23'
                 }),
-                date: new Intl.DateTimeFormat('en-US', {
+                date: new Intl.DateTimeFormat('id-ID', {
                     timeZone: clock.zone,
                     weekday: 'long', 
                     year: 'numeric', 
@@ -250,7 +358,6 @@
             };
         });
 
-        // Store previous seconds to detect changes and trigger animation efficiently
         const previousSeconds = {};
 
         // Main Update Loop
@@ -260,7 +367,7 @@
             allClocks.forEach(clock => {
                 const clockFormatters = formatters[clock.id];
                 
-                // --- Time Parsing ---
+                // Time Parsing
                 const timeParts = clockFormatters.time.formatToParts(now);
                 let hours = '', minutes = '', seconds = '';
                 
@@ -270,22 +377,18 @@
                     if (part.type === 'second') seconds = part.value;
                 });
 
-                // --- Date Parsing ---
+                // Date Parsing
                 const fullDate = clockFormatters.date.format(now);
 
-                // --- DOM Updates ---
+                // DOM Updates
                 document.getElementById(`time-${clock.id}`).textContent = `${hours}:${minutes}`;
                 const secElement = document.getElementById(`sec-${clock.id}`);
                 
-                // Only trigger DOM manipulation and animation if the second actually changed
                 if (previousSeconds[clock.id] !== seconds) {
                     secElement.textContent = `:${seconds}`;
-                    
-                    // Trigger subtle CSS animation
                     secElement.classList.remove('tick-anim');
-                    void secElement.offsetWidth; // Force DOM reflow to restart animation
+                    void secElement.offsetWidth; 
                     secElement.classList.add('tick-anim');
-
                     previousSeconds[clock.id] = seconds;
                 }
 
@@ -293,9 +396,80 @@
             });
         }
 
-        // Run immediately on load, then set interval to 1000ms
         updateClocks();
         setInterval(updateClocks, 1000);
+
+        // --- GEMINI API INTEGRATION ---
+
+        // Exponential backoff retry logic
+        async function fetchWithRetry(url, options, maxRetries = 5) {
+            const delays = [1000, 2000, 4000, 8000, 16000];
+            
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    if (i === maxRetries - 1) throw error;
+                    await new Promise(resolve => setTimeout(resolve, delays[i]));
+                }
+            }
+        }
+
+        async function handleGeminiClick(clockId) {
+            const clock = allClocks.find(c => c.id === clockId);
+            const btn = document.getElementById(`btn-${clockId}`);
+            const responseDiv = document.getElementById(`response-${clockId}`);
+            
+            // Get current local time strings to feed into the prompt
+            const currentTimeStr = document.getElementById(`time-${clockId}`).textContent;
+            const currentDateStr = document.getElementById(`date-${clockId}`).textContent;
+
+            // Update UI to loading state
+            btn.disabled = true;
+            btn.innerHTML = `<span class="loading-spinner"></span> Mengecek suasana...`;
+            responseDiv.style.display = 'none';
+
+            const promptText = `Anda adalah asisten perjalanan dan budaya yang ceria. Saat ini tepat pukul ${currentTimeStr} pada tanggal ${currentDateStr} waktu lokal di ${clock.city}. 
+            Dalam 2-3 kalimat singkat yang menarik, beri tahu saya apa yang biasanya dilakukan penduduk setempat saat ini, atau seperti apa suasana/vibe saat ini di kota tersebut pada waktu ini.`;
+
+            const payload = {
+                contents: [{
+                    parts: [{ text: promptText }]
+                }],
+                systemInstruction: {
+                    parts: [{ text: "Selalu jawab dengan ramah, ringkas, dan menggunakan Bahasa Indonesia yang natural. Fokus dengan ketat pada waktu saat ini yang diberikan." }]
+                }
+            };
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+            try {
+                const data = await fetchWithRetry(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Tidak dapat memuat suasana saat ini.";
+                
+                // Show response
+                responseDiv.innerHTML = generatedText;
+                responseDiv.style.display = 'block';
+
+            } catch (error) {
+                responseDiv.innerHTML = "Ups, tidak dapat terhubung ke AI saat ini. Silakan coba lagi nanti.";
+                responseDiv.style.display = 'block';
+            } finally {
+                // Restore button state
+                btn.disabled = false;
+                btn.innerHTML = `✨ Cek Suasana Lokal`;
+            }
+        }
+
     </script>
 </body>
 </html>
